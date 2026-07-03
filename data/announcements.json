@@ -1,0 +1,10 @@
+[
+  {
+    "id": "welcome",
+    "type": "reminder",
+    "title": "Welcome to the app",
+    "body": "Reminders, death notices and madrassa announcements will appear here once posted.",
+    "date": "2026-06-28",
+    "createdAt": 1782650675009
+  }
+]

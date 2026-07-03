@@ -1,0 +1,92 @@
+[
+  {
+    "id": "biz-1",
+    "name": "Business 1 (available)",
+    "category": "Advertise here",
+    "description": "",
+    "phone": "",
+    "website": "",
+    "image": ""
+  },
+  {
+    "id": "biz-2",
+    "name": "Business 2 (available)",
+    "category": "Advertise here",
+    "description": "",
+    "phone": "",
+    "website": "",
+    "image": ""
+  },
+  {
+    "id": "biz-3",
+    "name": "Business 3 (available)",
+    "category": "Advertise here",
+    "description": "",
+    "phone": "",
+    "website": "",
+    "image": ""
+  },
+  {
+    "id": "biz-4",
+    "name": "Business 4 (available)",
+    "category": "Advertise here",
+    "description": "",
+    "phone": "",
+    "website": "",
+    "image": ""
+  },
+  {
+    "id": "biz-5",
+    "name": "Business 5 (available)",
+    "category": "Advertise here",
+    "description": "",
+    "phone": "",
+    "website": "",
+    "image": ""
+  },
+  {
+    "id": "biz-6",
+    "name": "Business 6 (available)",
+    "category": "Advertise here",
+    "description": "",
+    "phone": "",
+    "website": "",
+    "image": ""
+  },
+  {
+    "id": "biz-7",
+    "name": "Business 7 (available)",
+    "category": "Advertise here",
+    "description": "",
+    "phone": "",
+    "website": "",
+    "image": ""
+  },
+  {
+    "id": "biz-8",
+    "name": "Business 8 (available)",
+    "category": "Advertise here",
+    "description": "",
+    "phone": "",
+    "website": "",
+    "image": ""
+  },
+  {
+    "id": "biz-9",
+    "name": "Business 9 (available)",
+    "category": "Advertise here",
+    "description": "",
+    "phone": "",
+    "website": "",
+    "image": ""
+  },
+  {
+    "id": "biz-10",
+    "name": "Business 10 (available)",
+    "category": "Advertise here",
+    "description": "",
+    "phone": "",
+    "website": "",
+    "image": ""
+  }
+]

@@ -1,0 +1,55 @@
+/* ============================================================
+   THEME — Jamia Masjid Ghausia palette: light green + white,
+   with dark green as the accent/tertiary colour.
+   Toggle dark mode with  <html data-theme="dark">.
+   --fs is the user font-scale multiplier (Settings).
+   ============================================================ */
+@font-face{
+  font-family:'Inter';
+  font-style:normal;
+  font-weight:100 900;          /* variable: covers all weights */
+  font-display:swap;
+  src:url('../fonts/inter.woff2') format('woff2');
+}
+:root{
+  --bg:#e7f4ea;             /* light green page */
+  --bg2:#d6ebdb;
+  --header-grad-top:#f6fbf7;
+  --card:#ffffff;
+  --ink:#10342a;            /* dark green text */
+  --muted:#5f7268;
+  --brand:#2f9e44;          /* logo green (primary) */
+  --brand-dark:#14532d;     /* dark green (tertiary / accent) */
+  --accent:#1f8b3b;         /* green accent (replaces gold) */
+  --accent-soft:#e4f4e8;
+  --line:#dbe7df;
+  --highlight:#e3f6e9;      /* highlighted "next"/today row */
+  --highlight-edge:#2f9e44;
+  --on-brand:#ffffff;       /* text on green surfaces (table head, nav) */
+  --on-brand-soft:rgba(255,255,255,.78);
+  --nav-bg:#14532d;         /* dark green bottom-nav bar */
+  --nav-ink:rgba(255,255,255,.66);
+  --nav-active:#9be7ad;     /* light green active */
+  --fs:1;
+}
+
+html[data-theme="dark"]{
+  --bg:#06140f;
+  --bg2:#030b08;
+  --header-grad-top:#0c2c20;
+  --card:#10211a;
+  --ink:#e7f3ea;
+  --muted:#9bb3a6;
+  --brand:#3fae54;
+  --brand-dark:#0c3d22;
+  --accent:#5fcf78;
+  --accent-soft:#16271d;
+  --line:#21362b;
+  --highlight:#1d3324;
+  --highlight-edge:#3fae54;
+  --on-brand:#ffffff;
+  --on-brand-soft:rgba(255,255,255,.7);
+  --nav-bg:#03100b;
+  --nav-ink:rgba(231,243,234,.55);
+  --nav-active:#7fe098;
+}
