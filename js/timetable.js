@@ -2,7 +2,7 @@
    TIMETABLE VIEW — full month as a data table.
    Toggle between Start times and Jamāʿah times for a cleaner view.
    ============================================================ */
-import { MON, RAW } from "./data.js";
+import { MON, RAW, overrideFor } from "./data.js";
 
 const $ = id => document.getElementById(id);
 let activeMonth = new Date().getMonth()+1;
@@ -18,9 +18,13 @@ function monthRows(m){
   return rows.map(r=>{
     const [d,sehri,sunrise,zuhrS,asrS,ishaS,f,z,a,maghrib,i]=r;
     if(f)fJ=f; if(z)zJ=z; if(a)aJ=a; if(i)iJ=i;
+    // admin-set custom Jamaat times win for that specific day
+    const ov = overrideFor(m, d) || {};
     return { d,
       begins:{ fajr:sehri, zuhr:zuhrS, asr:asrS, maghrib, isha:ishaS },
-      jamaat:{ fajr:fJ,    zuhr:zJ,    asr:aJ,   maghrib, isha:iJ }
+      jamaat:{ fajr:ov.fajr||fJ, zuhr:ov.zuhr||zJ, asr:ov.asr||aJ,
+               maghrib:ov.maghrib||maghrib, isha:ov.isha||iJ },
+      custom:ov
     };
   });
 }
@@ -48,13 +52,15 @@ function showMonth(m){
     const isToday = date.toDateString()===today.toDateString();
     const isFri = date.getDay()===5;
     const cls=[isToday?"is-today":"", isFri?"is-fri":""].filter(Boolean).join(" ");
+    // mark cells whose Jamaat time was customised in the admin console
+    const cust = p => (mode==="jamaat" && r.custom && r.custom[p]) ? ' class="custom"' : "";
     return `<tr class="${cls}">
       <td class="d">${r.d}</td>
-      <td>${cell(t.fajr)}</td>
-      <td>${cell(t.zuhr)}</td>
-      <td>${cell(t.asr)}</td>
-      <td>${cell(t.maghrib)}</td>
-      <td>${cell(t.isha)}</td>
+      <td${cust("fajr")}>${cell(t.fajr)}</td>
+      <td${cust("zuhr")}>${cell(t.zuhr)}</td>
+      <td${cust("asr")}>${cell(t.asr)}</td>
+      <td${cust("maghrib")}>${cell(t.maghrib)}</td>
+      <td${cust("isha")}>${cell(t.isha)}</td>
     </tr>`;
   }).join("");
 

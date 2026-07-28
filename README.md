@@ -1,8 +1,8 @@
-# Council of Mosque Sheffield — Prayer Times (Web App)
+# Dar Ul Uloom Siddiqia Masjid — Prayer Times (Web App)
 
-A shareable web version of the Jamia Masjid Ghausia / Council of Mosque Sheffield
-app: prayer times, monthly timetable, events, announcements (reminders / deaths /
-madrassa), and a masjid & business directory.
+A shareable web version of the Dar Ul Uloom Siddiqia Masjid app: prayer times,
+monthly timetable, events, announcements (reminders / deaths / madrassa), and a
+masjid & business directory.
 
 **Live app:** https://beepdeha.github.io/CouncilofMosquePrayertimes/
 
@@ -17,5 +17,5 @@ it like an app.
   directory are loaded live from Firebase (with the bundled data as an offline
   fallback), so content posted from the admin console appears here automatically.
 
-Built from the `IOS/` folder of the main
+Built from the `www/` folder of the main
 [cosheffield-prayer-times](https://github.com/beepdeha/cosheffield-prayer-times) repo.

@@ -15,6 +15,43 @@ export const MON = ["January","February","March","April","May","June","July",
 export const TABLE = {};
 export const RAW = {};
 
+/* Custom Jamaat times set from the admin console, keyed "M-D".
+   Each value holds only the prayers that were overridden, e.g.
+   { asr:"7.45", maghrib:"9.42" }.  Empty until loadOverrides() runs. */
+export const OVERRIDES = {};
+
+/* Which TABLE field each override prayer key writes to. */
+const OVERRIDE_FIELD = {
+  fajr:"fajrJ", zuhr:"zuhrJ", asr:"asrJ", isha:"ishaJ", maghrib:"maghrib"
+};
+
+export function overrideFor(month, day){ return OVERRIDES[month+"-"+day] || null; }
+
+/* Fetch admin overrides (Firestore → cache → seed). Safe to call late;
+   the app renders fine before this resolves. */
+export async function loadOverrides(){
+  const { loadCollection } = await import("./firebase.js");
+  const { data } = await loadCollection("jamaat_overrides", { orderField:"month", desc:false });
+  for(const key of Object.keys(OVERRIDES)) delete OVERRIDES[key];
+  for(const row of (data||[])){
+    // doc id is "M-D"; fall back to month/day fields
+    const key = row.id || (row.month+"-"+row.day);
+    const times = {};
+    for(const p of Object.keys(OVERRIDE_FIELD)) if(row[p]) times[p]=row[p];
+    if(Object.keys(times).length) OVERRIDES[key]=times;
+  }
+  return OVERRIDES;
+}
+
+/* Merge any override into a base row from TABLE. */
+function withOverride(base, key){
+  const ov = OVERRIDES[key];
+  if(!ov) return base;
+  const out = { ...base };
+  for(const [p, field] of Object.entries(OVERRIDE_FIELD)) if(ov[p]) out[field]=ov[p];
+  return out;
+}
+
 export async function initData(){
   const res = await fetch("data/prayer-times.json");
   const raw = await res.json();
@@ -39,7 +76,9 @@ export async function initData(){
 }
 
 export function dayTimes(date){
-  return TABLE[(date.getMonth()+1)+"-"+date.getDate()] || null;
+  const key = (date.getMonth()+1)+"-"+date.getDate();
+  const base = TABLE[key];
+  return base ? withOverride(base, key) : null;
 }
 
 /* "Begins" time string -> minutes-from-midnight, choosing AM/PM by prayer. */

@@ -1,6 +1,7 @@
 /* ============================================================
-   THEME — Jamia Masjid Ghausia palette: light green + white,
-   with dark green as the accent/tertiary colour.
+   THEME — Dar Ul Uloom Siddiqia Masjid palette:
+   navy (#0A1247) + gold (#C9A227) on cream (#F5F0E1),
+   taken from the Islamic girih background design.
    Toggle dark mode with  <html data-theme="dark">.
    --fs is the user font-scale multiplier (Settings).
    ============================================================ */
@@ -12,44 +13,50 @@
   src:url('../fonts/inter.woff2') format('woff2');
 }
 :root{
-  --bg:#e7f4ea;             /* light green page */
-  --bg2:#d6ebdb;
-  --header-grad-top:#f6fbf7;
+  --bg:#F5F0E1;             /* cream page */
+  --bg2:#EDE6D2;
+  --header-grad-top:#FBF8EE;
   --card:#ffffff;
-  --ink:#10342a;            /* dark green text */
-  --muted:#5f7268;
-  --brand:#2f9e44;          /* logo green (primary) */
-  --brand-dark:#14532d;     /* dark green (tertiary / accent) */
-  --accent:#1f8b3b;         /* green accent (replaces gold) */
-  --accent-soft:#e4f4e8;
-  --line:#dbe7df;
-  --highlight:#e3f6e9;      /* highlighted "next"/today row */
-  --highlight-edge:#2f9e44;
-  --on-brand:#ffffff;       /* text on green surfaces (table head, nav) */
-  --on-brand-soft:rgba(255,255,255,.78);
-  --nav-bg:#14532d;         /* dark green bottom-nav bar */
-  --nav-ink:rgba(255,255,255,.66);
-  --nav-active:#9be7ad;     /* light green active */
+  --ink:#0A1247;            /* navy text */
+  --muted:#5d6480;
+  --brand:#0A1247;          /* navy (primary) */
+  --brand-dark:#06081f;     /* deep navy (bars, table heads) */
+  --accent:#7F631A;         /* deep gold — AA-readable text on cream/white */
+  --accent-bright:#C9A227;  /* bright gold for lines, borders, highlights */
+  --accent-soft:#F7EFD6;
+  --line:#E2DAC4;
+  --highlight:#FBF1D4;      /* highlighted "next"/today row */
+  --highlight-edge:#C9A227;
+  --on-brand:#F5F0E1;       /* text on --brand surfaces */
+  --on-navy:#F5F0E1;        /* always-cream text on deep-navy bars */
+  --on-brand-soft:rgba(245,240,225,.78);
+  --nav-bg:#0A1247;         /* navy bottom-nav bar */
+  --nav-ink:rgba(245,240,225,.62);
+  --nav-active:#E3C46A;     /* light gold active */
+  --pattern:url('../img/pattern-light.svg');
   --fs:1;
 }
 
 html[data-theme="dark"]{
-  --bg:#06140f;
-  --bg2:#030b08;
-  --header-grad-top:#0c2c20;
-  --card:#10211a;
-  --ink:#e7f3ea;
-  --muted:#9bb3a6;
-  --brand:#3fae54;
-  --brand-dark:#0c3d22;
-  --accent:#5fcf78;
-  --accent-soft:#16271d;
-  --line:#21362b;
-  --highlight:#1d3324;
-  --highlight-edge:#3fae54;
-  --on-brand:#ffffff;
-  --on-brand-soft:rgba(255,255,255,.7);
-  --nav-bg:#03100b;
-  --nav-ink:rgba(231,243,234,.55);
-  --nav-active:#7fe098;
+  --bg:#0A1247;
+  --bg2:#06081f;
+  --header-grad-top:#141d5c;
+  --card:#131b52;
+  --ink:#F5F0E1;
+  --muted:#a6adc8;
+  --brand:#C9A227;
+  --brand-dark:#06081f;
+  --accent:#E3C46A;
+  --accent-bright:#E3C46A;
+  --accent-soft:#182154;
+  --line:#26306e;
+  --highlight:#1d2764;
+  --highlight-edge:#C9A227;
+  --on-brand:#0A1247;
+  --on-brand-soft:rgba(10,18,71,.75);
+  --on-navy:#F5F0E1;
+  --nav-bg:#06081f;
+  --nav-ink:rgba(245,240,225,.55);
+  --nav-active:#E3C46A;
+  --pattern:url('../img/pattern-dark.svg');
 }

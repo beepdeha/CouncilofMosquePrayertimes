@@ -1,13 +1,15 @@
 /* ============================================================
    APP BOOTSTRAP — loads data, wires the bottom nav, and lazily
    initialises each section the first time it is opened.
-   Also: auto-refresh of live content on app resume, and the
-   About easter egg.
-   (Web build: no push/local notifications — those need the
-   native app — and no first-run onboarding gate.)
+   Also: first-run onboarding (settings before entering the app),
+   auto-refresh of live content on app resume, and the About
+   easter egg.
    ============================================================ */
-import { initData } from "./data.js";
+import { initData, loadOverrides } from "./data.js";
+import { getItem, setItem } from "./store.js";
 import { initSettings, getSettings, renderSettings } from "./settings.js";
+import { reschedule } from "./notifications.js";
+import { syncSubscriptions } from "./push.js";
 import { initLinks } from "./links.js";
 import { initPrayers, refreshPrayers } from "./prayers.js";
 import { initTimetable } from "./timetable.js";
@@ -16,6 +18,7 @@ import { initAnnouncements } from "./announcements.js";
 import { initDirectory } from "./directory.js";
 
 const $ = id => document.getElementById(id);
+const ONBOARD_KEY = "onboarded.v1";
 
 const SECTIONS = {
   prayers:       { el:"todayView" },
@@ -48,9 +51,12 @@ function lazyInit(name){
   }
 }
 
-/* Mark live sections stale so they re-fetch next time they're opened. */
+/* Mark live sections stale so they re-fetch next time they're opened,
+   and re-pull the admin's custom Jamaat times. */
 async function refreshLiveContent(){
   LIVE.forEach(n=>inited.delete(n));
+  inited.delete("timetable");
+  await loadOverrides().catch(()=>{});
 }
 
 function show(name){
@@ -96,25 +102,56 @@ function wireNav(){
 
 /* ---- Auto-refresh live content when the app returns to the foreground ---- */
 function wireResumeRefresh(){
-  const onResume=()=>{
+  const onResume=async ()=>{
     if(document.visibilityState!=="visible") return;
     LIVE.forEach(n=>inited.delete(n));
     if(LIVE.includes(current)) lazyInit(current);   // re-fetch the visible section now
+    await loadOverrides().catch(()=>{});            // custom Jamaat times may have changed
+    inited.delete("timetable");
+    if(current==="timetable") lazyInit("timetable");
     if(current==="prayers") refreshPrayers();
   };
   document.addEventListener("visibilitychange", onResume);
   window.addEventListener("focus", onResume);
 }
 
+/* ---- First-run onboarding: settings must be seen before the app ---- */
+async function startOnboarding(){
+  document.querySelector(".bottomnav").style.display="none";
+  show("settings");
+  const view=$("settingsView");
+  view.insertAdjacentHTML("afterbegin",
+    `<div class="onboard-banner">Asalaamu Alaikum 👋<br>Please adjust your settings before continuing to the app.</div>`);
+  view.insertAdjacentHTML("beforeend",
+    `<button class="onboard-continue" id="onboardContinue">Continue</button>`);
+  $("onboardContinue").onclick=async()=>{
+    await setItem(ONBOARD_KEY, true);
+    view.querySelector(".onboard-banner")?.remove();
+    $("onboardContinue")?.remove();
+    document.querySelector(".bottomnav").style.display="";
+    show("prayers");
+  };
+}
+
 async function main(){
   initLinks();
   await initData();
+  await loadOverrides().catch(()=>{});   // custom Jamaat times from the admin console
   await initSettings(kind=>{
+    if(kind==="notify") reschedule(getSettings());
+    if(kind==="announce") syncSubscriptions(getSettings());
     if(kind==="theme"||kind==="font") refreshPrayers();
   });
   wireNav();
   wireResumeRefresh();
-  show("prayers");
+
+  const onboarded = await getItem(ONBOARD_KEY, false);
+  if(onboarded) show("prayers");
+  else await startOnboarding();
+
+  // apply saved notification prefs on launch
+  reschedule(getSettings());
+  syncSubscriptions(getSettings());
 }
 
 main().catch(e=>{
