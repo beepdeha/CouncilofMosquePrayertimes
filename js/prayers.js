@@ -2,26 +2,49 @@
    PRAYERS VIEW — today's table, day navigation, live countdown,
    and pull-to-refresh.
    ============================================================ */
-import { DOW, MON, dayTimes, nextBegins, nextJamaat } from "./data.js";
+import { DOW, MON, dayTimes, nextBegins, nextJamaat,
+         currentPrayer, defaultViewDate } from "./data.js";
 import { getSettings } from "./settings.js";
 
-let view = new Date();              // the date currently shown
+let view = defaultViewDate();       // the date currently shown
+let manualNav = false;              // true once the user browses another day
 let cdTimer = null;
 let onRefresh = null;               // optional live-content refresh
 
 const $ = id => document.getElementById(id);
+const sameDay = (a,b) => a.getFullYear()===b.getFullYear() &&
+                         a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
+
+/* The live "Now — <prayer>" bar. Always reflects the real clock, not the
+   day being browsed. */
+function renderCurrent(){
+  const cur = currentPrayer();
+  const box = $("current");
+  if(!cur){ box.hidden = true; return; }
+  box.hidden = false;
+  $("curName").textContent = cur.name;
+  const times = cur.note ? cur.note
+    : [cur.begins, cur.jamaat].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join(" · ");
+  $("curTimes").textContent = times;
+}
 
 function render(){
   const m=view.getMonth()+1, d=view.getDate();
   const t=dayTimes(view);
-  const today=new Date();
+  const today=new Date(); today.setHours(0,0,0,0);
+  const tomorrow=new Date(today); tomorrow.setDate(tomorrow.getDate()+1);
+  const def=defaultViewDate();
 
   $("dow").textContent = DOW[view.getDay()];
   $("date").textContent = d+" "+MON[m-1];
 
-  const isToday = view.toDateString()===today.toDateString();
-  $("todayBtn").hidden = isToday;
-  $("pageTitle").textContent = isToday ? "Today's Prayers" : "Prayer Times";
+  renderCurrent();
+
+  const isDefault = sameDay(view, def);
+  $("todayBtn").hidden = isDefault;
+  $("todayBtn").textContent = sameDay(def, today) ? "Back to today" : "Back to tomorrow";
+  $("pageTitle").textContent = sameDay(view, today) ? "Today's Prayers"
+    : sameDay(view, tomorrow) ? "Tomorrow's Prayers" : "Prayer Times";
 
   const mode = getSettings().display.times;      // "both" | "begins" | "jamaat"
   const single = mode!=="both";
@@ -46,8 +69,10 @@ function render(){
   // Sunrise has no Jamaat, so drop it when only Jamaat times are shown
   if(mode==="jamaat") list=list.filter(p=>p[4]!=="sunrise");
 
+  // highlight the upcoming prayer while on the default day (today, or
+  // tomorrow once Isha has started — where the next prayer is its Fajr)
   let nextIdx=-1;
-  if(isToday){
+  if(isDefault){
     const nx = mode==="jamaat" ? nextJamaat() : nextBegins();
     if(nx) nextIdx=list.findIndex(p=>p[0]===nx.name);
   }
@@ -89,10 +114,14 @@ function cdBox(label, nx, now){
 function tickCountdown(){
   const cd=$("countdown");
   const n=new Date();
-  const isToday = view.getFullYear()===n.getFullYear() &&
-                  view.getMonth()===n.getMonth() &&
-                  view.getDate()===n.getDate();
-  if(!isToday){ cd.hidden=true; return; }
+
+  // roll onto the next day once the last prayer has started (unless the
+  // user is deliberately browsing another date)
+  const def=defaultViewDate(n);
+  if(!manualNav && !sameDay(view, def)){ view=def; render(); }
+  else renderCurrent();
+
+  if(!sameDay(view, def)){ cd.hidden=true; return; }
 
   const mode = getSettings().display.countdown;   // "both" | "begins" | "jamaat"
   const nb = (mode==="both"||mode==="begins") ? nextBegins() : null;
@@ -144,9 +173,9 @@ function initPullToRefresh(){
 
 export function initPrayers(refreshCb){
   onRefresh = refreshCb || null;
-  $("prev").onclick   =()=>{ view.setDate(view.getDate()-1); render(); tickCountdown(); };
-  $("next").onclick   =()=>{ view.setDate(view.getDate()+1); render(); tickCountdown(); };
-  $("todayBtn").onclick=()=>{ view=new Date(); render(); tickCountdown(); };
+  $("prev").onclick   =()=>{ view.setDate(view.getDate()-1); manualNav=true; render(); tickCountdown(); };
+  $("next").onclick   =()=>{ view.setDate(view.getDate()+1); manualNav=true; render(); tickCountdown(); };
+  $("todayBtn").onclick=()=>{ view=defaultViewDate(); manualNav=false; render(); tickCountdown(); };
   render();
   tickCountdown();
   if(cdTimer) clearInterval(cdTimer);

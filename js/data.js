@@ -121,6 +121,51 @@ function nextFrom(order, fajrField, from){
   return null;
 }
 
+/* The prayer period we are currently in — the last one whose start time
+   has passed. Before today's Fajr this wraps back to yesterday's Isha.
+   Sunrise is included as a period so we never imply Fajr is still open. */
+export function currentPrayer(from){
+  const now = from || new Date();
+  const t = dayTimes(now);
+  const nowMin = now.getHours()*60+now.getMinutes()+now.getSeconds()/60;
+  if(t){
+    const seq=[
+      ["Fajr","fajr","sehri","fajrJ",""],
+      ["Sunrise","sunrise","sunrise",null,"Fajr has ended"],
+      ["Zuhr","zuhr","zuhrS","zuhrJ",""],
+      ["Asr","asr","asrS","asrJ",""],
+      ["Maghrib","maghrib","maghrib","maghrib",""],
+      ["Isha","isha","ishaS","ishaJ",""]
+    ];
+    let cur=null;
+    for(const [name,key,sf,jf,note] of seq){
+      const mins=toMinutes(t[sf],key);
+      if(mins===null) continue;
+      if(mins<=nowMin) cur={ name, key, begins:t[sf], jamaat:jf?t[jf]:"", note };
+      else break;                       // list is in time order
+    }
+    if(cur) return cur;
+  }
+  const y=new Date(now); y.setDate(y.getDate()-1);
+  const ty=dayTimes(y);
+  if(ty) return { name:"Isha", key:"isha", begins:ty.ishaS, jamaat:ty.ishaJ, note:"" };
+  return null;
+}
+
+/* Which day the Prayers page should show by default: today, or tomorrow
+   once the last prayer (Isha) has started and today's list is spent. */
+export function defaultViewDate(from){
+  const now = from || new Date();
+  const d = new Date(now); d.setHours(0,0,0,0);
+  const t = dayTimes(now);
+  if(t){
+    const isha = toMinutes(t.ishaS, "isha");
+    const nowMin = now.getHours()*60+now.getMinutes()+now.getSeconds()/60;
+    if(isha!==null && nowMin >= isha) d.setDate(d.getDate()+1);
+  }
+  return d;
+}
+
 /* Next prayer to BEGIN from now. */
 export function nextBegins(from){
   return nextFrom([["Fajr","fajr","sehri"],["Zuhr","zuhr","zuhrS"],["Asr","asr","asrS"],
