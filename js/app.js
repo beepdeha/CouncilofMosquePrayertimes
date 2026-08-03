@@ -63,8 +63,6 @@ function show(name){
   if(!SECTIONS[name]) return;
   current=name;
   Object.entries(SECTIONS).forEach(([k,v])=> $(v.el).hidden = (k!==name));
-  // Prayers is laid out to fit the screen exactly; every other page scrolls
-  document.body.classList.toggle("fit-prayers", name==="prayers");
   // About lives under Settings in the nav
   const navKey = (name==="about") ? "settings" : name;
   document.querySelectorAll(".navitem").forEach(b=>

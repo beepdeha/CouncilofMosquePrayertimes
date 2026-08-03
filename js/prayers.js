@@ -15,17 +15,16 @@ const $ = id => document.getElementById(id);
 const sameDay = (a,b) => a.getFullYear()===b.getFullYear() &&
                          a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
 
-/* The live "Now — <prayer>" bar. Always reflects the real clock, not the
-   day being browsed. */
+/* The live "Now: <prayer> - <times>" bar. Always reflects the real clock,
+   not the day being browsed. */
 function renderCurrent(){
   const cur = currentPrayer();
   const box = $("current");
   if(!cur){ box.hidden = true; return; }
   box.hidden = false;
-  $("curName").textContent = cur.name;
   const times = cur.note ? cur.note
     : [cur.begins, cur.jamaat].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join(" · ");
-  $("curTimes").textContent = times;
+  $("curText").textContent = `Now: ${cur.name}${times ? " - " + times : ""}`;
 }
 
 function render(){
