@@ -65,6 +65,16 @@ header{ text-align:center; padding:max(20px,env(safe-area-inset-top)) 0 4px; }
 }
 .cd-label{font-size:calc(1.02rem*var(--fs));font-weight:800;}
 .cd-time{font-size:calc(1.5rem*var(--fs));font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums;}
+/* "less than a minute" / "now" need to fit where a short time normally sits */
+.cd-time.text{font-size:calc(1rem*var(--fs));}
+.cd-box{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;flex:1;text-align:center;}
+/* Both countdowns: two boxes side by side, split by a divider */
+.countdown.split{gap:0;padding:0;}
+.countdown.split .cd-box{flex-direction:column;gap:2px;padding:12px 10px;}
+.countdown.split .cd-box + .cd-box{border-left:2px solid var(--accent-bright);}
+.countdown.split .cd-label{font-size:calc(.82rem*var(--fs));}
+.countdown.split .cd-time{font-size:calc(1.28rem*var(--fs));}
+.countdown.split .cd-time.text{font-size:calc(.88rem*var(--fs));}
 
 /* ---------- Card / prayer table ---------- */
 .card{ background:var(--card);border-radius:16px;margin-top:18px;overflow:hidden;box-shadow:0 10px 30px rgba(10,18,71,.12); }
@@ -76,6 +86,9 @@ header{ text-align:center; padding:max(20px,env(safe-area-inset-top)) 0 4px; }
 .tablehead div:nth-child(1){text-align:left;}
 .tablehead div:nth-child(2),.tablehead div:nth-child(3){text-align:right;}
 .row{ display:grid;grid-template-columns:1.3fr 1fr 1fr;align-items:center;border-top:1px solid var(--line); }
+/* Start-only / Jamaat-only view: two columns instead of three */
+.tablehead.single{grid-template-columns:1.6fr 1fr;}
+.row.single{grid-template-columns:1.6fr 1fr;}
 .row .name{ text-align:left;padding:16px 14px;font-size:calc(1.25rem*var(--fs));font-weight:800;color:var(--ink); }
 .row .sub{ display:block;font-size:calc(.72rem*var(--fs));font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:1px; }
 .row .begins,.row .jamaat{ text-align:right;padding:16px 14px;font-size:calc(1.4rem*var(--fs));font-weight:800;font-variant-numeric:tabular-nums;color:var(--ink); }
@@ -107,9 +120,12 @@ header{ text-align:center; padding:max(20px,env(safe-area-inset-top)) 0 4px; }
 .mt-table th{ background:var(--brand-dark);color:var(--on-navy);font-size:calc(.74rem*var(--fs));text-transform:uppercase;letter-spacing:.04em;padding:10px 6px;position:sticky;top:0; }
 .mt-table td{ padding:10px 6px;text-align:center;border-top:1px solid var(--line);font-size:calc(.94rem*var(--fs));color:var(--ink);font-weight:700; }
 .mt-table td.d{font-weight:800;color:var(--brand);}
+.mt-table td.dy{color:var(--muted);font-size:calc(.86rem*var(--fs));}
+/* Friday shading first so today's highlight wins when they coincide */
+.mt-table tr.is-fri td{background:var(--friday);}
+.mt-table tr.is-fri td.d,.mt-table tr.is-fri td.dy{font-weight:800;}
 .mt-table tr.is-today td{background:var(--highlight);}
 .mt-table tr.is-today td.d{color:var(--accent);}
-.mt-table tr.is-fri td.d{text-decoration:underline;}
 /* Jamaat time customised from the admin console */
 .mt-table td.custom{color:var(--accent);font-weight:800;position:relative;}
 .mt-table td.custom::after{content:"•";position:absolute;top:2px;right:4px;font-size:.7em;line-height:1;}

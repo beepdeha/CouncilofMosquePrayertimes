@@ -1,9 +1,9 @@
 [
   {
     "id": "welcome",
-    "type": "reminder",
+    "type": "announcement",
     "title": "Welcome to the app",
-    "body": "Reminders, death notices and madrassa announcements will appear here once posted.",
+    "body": "Announcements, Janaza notices, madrassa updates and reminders will appear here once posted.",
     "date": "2026-06-28",
     "createdAt": 1782650675009
   }

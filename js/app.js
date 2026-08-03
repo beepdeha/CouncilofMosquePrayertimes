@@ -140,7 +140,7 @@ async function main(){
   await initSettings(kind=>{
     if(kind==="notify") reschedule(getSettings());
     if(kind==="announce") syncSubscriptions(getSettings());
-    if(kind==="theme"||kind==="font") refreshPrayers();
+    if(kind==="theme"||kind==="font"||kind==="display") refreshPrayers();
   });
   wireNav();
   wireResumeRefresh();

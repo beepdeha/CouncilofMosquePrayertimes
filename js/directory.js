@@ -11,7 +11,7 @@ let mosques = [];
 let businesses = [];
 let offersByBiz = {};
 
-const BUSINESS_INTRO = "The intention of this app and its business section is for the Muslim community to benefit from the businesses who advertise — both by helping their own businesses grow and by supporting fellow local businesses.";
+const BUSINESS_INTRO = "Our Business Directory exists to help our community benefit from the services offered by local Muslim-owned businesses. It's a win for everyone: the community gets easy access to trusted local services, the businesses gain visibility and custom, and every business that advertises with us also directly supports Dar Ul Uloom Siddiqia Masjid.";
 
 function esc(s=""){ return String(s).replace(/[&<>"]/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c])); }
 

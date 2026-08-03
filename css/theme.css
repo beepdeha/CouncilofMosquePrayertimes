@@ -27,6 +27,7 @@
   --line:#E2DAC4;
   --highlight:#FBF1D4;      /* highlighted "next"/today row */
   --highlight-edge:#C9A227;
+  --friday:#EAF0F7;         /* Friday row tint (cool, distinct from today's gold) */
   --on-brand:#F5F0E1;       /* text on --brand surfaces */
   --on-navy:#F5F0E1;        /* always-cream text on deep-navy bars */
   --on-brand-soft:rgba(245,240,225,.78);
@@ -52,6 +53,7 @@ html[data-theme="dark"]{
   --line:#26306e;
   --highlight:#1d2764;
   --highlight-edge:#C9A227;
+  --friday:#101a4a;         /* Friday row tint (dark) */
   --on-brand:#0A1247;
   --on-brand-soft:rgba(10,18,71,.75);
   --on-navy:#F5F0E1;

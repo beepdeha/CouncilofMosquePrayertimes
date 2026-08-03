@@ -8,7 +8,8 @@
    ============================================================ */
 
 // settings type-key  ->  FCM topic
-const TOPIC = { events:"events", reminder:"reminders", death:"deaths", madrassa:"madrassa", offers:"offers" };
+const TOPIC = { events:"events", announcement:"announcements", reminder:"reminders",
+                death:"deaths", madrassa:"madrassa", offers:"offers" };
 
 function plugin(){
   try{ return window.Capacitor?.Plugins?.FirebaseMessaging || null; }catch{ return null; }

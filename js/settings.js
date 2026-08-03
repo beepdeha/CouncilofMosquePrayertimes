@@ -6,14 +6,18 @@ import { getItem, setItem } from "./store.js";
 
 const PRAYERS = ["fajr","zuhr","asr","maghrib","isha"];
 const ANNOUNCE_TYPES = [
-  ["events","Events"], ["reminder","Reminders"], ["death","Death notices"],
-  ["madrassa","Madrassa"], ["offers","Business offers"]
+  ["events","Events"], ["announcement","Announcements"], ["death","Janaza"],
+  ["madrassa","Madrassa"], ["reminder","Reminders"], ["offers","Business offers"]
 ];
 const KEY = "settings.v1";
 
 const DEFAULTS = {
   fontScale: 1,
   theme: "light",            // "light" | "dark"
+  display: {
+    times: "both",           // prayer table: "both" | "begins" | "jamaat"
+    countdown: "both"        // countdown:    "both" | "begins" | "jamaat"
+  },
   notify: {
     enabled: false,
     target: "jamaat",        // "jamaat" | "start"
@@ -22,7 +26,7 @@ const DEFAULTS = {
   },
   announce: {                // push notifications for posted content
     enabled: false,
-    types: { events:true, reminder:true, death:true, madrassa:true, offers:true }
+    types: { events:true, announcement:true, reminder:true, death:true, madrassa:true, offers:true }
   }
 };
 
@@ -44,6 +48,7 @@ export async function initSettings(changeCb){
   onChange = changeCb || (()=>{});
   const saved = await getItem(KEY, null);
   if(saved) state = Object.assign(structuredClone(DEFAULTS), saved, {
+    display: Object.assign(structuredClone(DEFAULTS.display), saved.display||{}),
     notify: Object.assign(structuredClone(DEFAULTS.notify), saved.notify||{}),
     announce: Object.assign(structuredClone(DEFAULTS.announce), saved.announce||{}, {
       types: Object.assign(structuredClone(DEFAULTS.announce.types), saved.announce?.types||{})
@@ -79,6 +84,22 @@ export function renderSettings(){
       <div class="set-row">
         <div class="lbl">Dark mode</div>
         <label class="toggle"><input type="checkbox" id="darkToggle" ${s.theme==="dark"?"checked":""}><span class="track"></span><span class="knob"></span></label>
+      </div>
+      <div class="set-row">
+        <div class="lbl">Prayer times shown<small>Which times to show on the Prayers page</small></div>
+        <select class="sel" id="dispTimes">
+          <option value="both" ${s.display.times==="both"?"selected":""}>Both</option>
+          <option value="begins" ${s.display.times==="begins"?"selected":""}>Start only</option>
+          <option value="jamaat" ${s.display.times==="jamaat"?"selected":""}>Jamaat only</option>
+        </select>
+      </div>
+      <div class="set-row">
+        <div class="lbl">Countdown<small>Which countdown to display</small></div>
+        <select class="sel" id="dispCountdown">
+          <option value="both" ${s.display.countdown==="both"?"selected":""}>Both</option>
+          <option value="begins" ${s.display.countdown==="begins"?"selected":""}>Start only</option>
+          <option value="jamaat" ${s.display.countdown==="jamaat"?"selected":""}>Jamaat only</option>
+        </select>
       </div>
     </div>
 
@@ -125,6 +146,8 @@ export function renderSettings(){
   $("fontInc").onclick=()=>setFont(s.fontScale+0.1);
   $("fontDec").onclick=()=>setFont(s.fontScale-0.1);
   $("darkToggle").onchange=e=>{ s.theme=e.target.checked?"dark":"light"; apply(); persist(); onChange("theme"); };
+  $("dispTimes").onchange=e=>{ s.display.times=e.target.value; persist(); onChange("display"); };
+  $("dispCountdown").onchange=e=>{ s.display.countdown=e.target.value; persist(); onChange("display"); };
   $("notifToggle").onchange=e=>{ s.notify.enabled=e.target.checked; persist(); onChange("notify"); };
   $("notifTarget").onchange=e=>{ s.notify.target=e.target.value; persist(); onChange("notify"); };
   $("notifLead").onchange=e=>{ s.notify.leadMinutes=clampLead(e.target.value); e.target.value=s.notify.leadMinutes; persist(); onChange("notify"); };

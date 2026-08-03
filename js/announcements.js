@@ -1,14 +1,17 @@
 /* ============================================================
-   ANNOUNCEMENTS VIEW — Reminders / Deaths / Madrassa.
-   Each item has a `type` of reminder | death | madrassa.
+   ANNOUNCEMENTS VIEW — Announcements / Janaza / Madrassa / Reminders.
+   Each item has a `type` of announcement | death | madrassa | reminder.
+   ("death" is kept as the stored key so existing posts still show;
+   it is only labelled "Janaza" in the UI.)
    Newest first (by createdAt); shows posted date + time of day.
    ============================================================ */
 import { loadCollection } from "./firebase.js";
 import { attachPTR } from "./ptr.js";
 
 const $ = id => document.getElementById(id);
-const TYPES = { reminder:"Reminders", death:"Death Notices", madrassa:"Madrassa" };
-let activeType = "reminder";
+const TYPES = { announcement:"announcements", death:"Janaza notices",
+                madrassa:"madrassa announcements", reminder:"reminders" };
+let activeType = "announcement";
 let items = [];
 let ptrAttached = false;
 
@@ -32,10 +35,10 @@ function renderList(){
 
   const list=$("annList");
   const rows=items
-    .filter(i=>(i.type||"reminder")===activeType)
+    .filter(i=>(i.type||"announcement")===activeType)
     .sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));   // newest first
   if(!rows.length){
-    list.innerHTML=`<p class="empty">No ${TYPES[activeType].toLowerCase()} at the moment.<br>Check back soon.</p>`;
+    list.innerHTML=`<p class="empty">No ${TYPES[activeType]} at the moment.<br>Check back soon.</p>`;
     return;
   }
   list.innerHTML=rows.map(i=>`

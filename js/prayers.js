@@ -2,7 +2,8 @@
    PRAYERS VIEW — today's table, day navigation, live countdown,
    and pull-to-refresh.
    ============================================================ */
-import { DOW, MON, dayTimes, nextBegins } from "./data.js";
+import { DOW, MON, dayTimes, nextBegins, nextJamaat } from "./data.js";
+import { getSettings } from "./settings.js";
 
 let view = new Date();              // the date currently shown
 let cdTimer = null;
@@ -22,10 +23,19 @@ function render(){
   $("todayBtn").hidden = isToday;
   $("pageTitle").textContent = isToday ? "Today's Prayers" : "Prayer Times";
 
+  const mode = getSettings().display.times;      // "both" | "begins" | "jamaat"
+  const single = mode!=="both";
   const rows=$("rows");
-  if(!t){ rows.innerHTML='<div class="row"><div class="name">No data for this date</div><div></div><div></div></div>'; return; }
+  const head=$("tableHead");
 
-  const list=[
+  head.className = "tablehead" + (single?" single":"");
+  head.innerHTML = single
+    ? `<div>Prayer</div><div>${mode==="jamaat"?"Jamaat":"Start"}</div>`
+    : `<div>Prayer</div><div>Start</div><div>Jamaat</div>`;
+
+  if(!t){ rows.innerHTML='<div class="row"><div class="name">No data for this date</div><div></div></div>'; return; }
+
+  let list=[
     ["Fajr","Dawn", t.sehri, t.fajrJ, "fajr"],
     ["Sunrise","Fajr ends", t.sunrise, "", "sunrise"],
     ["Zuhr","Midday", t.zuhrS, t.zuhrJ, "zuhr"],
@@ -33,23 +43,47 @@ function render(){
     ["Maghrib","Sunset", t.maghrib, t.maghrib, "maghrib"],
     ["Isha","Night", t.ishaS, t.ishaJ, "isha"]
   ];
+  // Sunrise has no Jamaat, so drop it when only Jamaat times are shown
+  if(mode==="jamaat") list=list.filter(p=>p[4]!=="sunrise");
 
   let nextIdx=-1;
   if(isToday){
-    const nx=nextBegins();
+    const nx = mode==="jamaat" ? nextJamaat() : nextBegins();
     if(nx) nextIdx=list.findIndex(p=>p[0]===nx.name);
   }
 
+  const dash = '<span class="dash">—</span>';
   rows.innerHTML = list.map((p,i)=>{
-    const cls = "row" + (p[4]==="sunrise"?" sunrise":"") + (i===nextIdx?" next":"");
-    const begins = p[2] || '<span class="dash">—</span>';
-    const jam = p[4]==="sunrise" ? '<span class="dash">—</span>' : (p[3] || '<span class="dash">—</span>');
+    const cls = "row" + (single?" single":"") + (p[4]==="sunrise"?" sunrise":"") + (i===nextIdx?" next":"");
+    const begins = p[2] || dash;
+    const jam = p[4]==="sunrise" ? dash : (p[3] || dash);
+    const cells = mode==="both" ? `<div class="begins">${begins}</div><div class="jamaat">${jam}</div>`
+                : mode==="jamaat" ? `<div class="jamaat">${jam}</div>`
+                : `<div class="begins">${begins}</div>`;
     return `<div class="${cls}">
       <div class="name">${p[0]}<span class="sub">${p[1]}</span></div>
-      <div class="begins">${begins}</div>
-      <div class="jamaat">${jam}</div>
+      ${cells}
     </div>`;
   }).join("");
+}
+
+/* Time remaining as text. Under a minute we say so rather than "0m". */
+function fmtLeft(target, now){
+  const ms = target - now;
+  if(ms <= 0) return { text:"now", small:true };
+  const totalMin = Math.floor(ms/60000);
+  if(totalMin < 1) return { text:"less than a minute", small:true };
+  const h=Math.floor(totalMin/60), m=totalMin%60;
+  return { text: h>0 ? (h+"h "+m+"m") : (m+"m"), small:false };
+}
+
+function cdBox(label, nx, now){
+  if(!nx) return "";
+  const { text, small } = fmtLeft(nx.target, now);
+  return `<div class="cd-box">
+    <span class="cd-label">${nx.name} ${label}</span>
+    <span class="cd-time${small?" text":""}">${text}</span>
+  </div>`;
 }
 
 function tickCountdown(){
@@ -58,13 +92,16 @@ function tickCountdown(){
   const isToday = view.getFullYear()===n.getFullYear() &&
                   view.getMonth()===n.getMonth() &&
                   view.getDate()===n.getDate();
-  const nx = isToday ? nextBegins() : null;
-  if(!nx){ cd.hidden=true; return; }
+  if(!isToday){ cd.hidden=true; return; }
+
+  const mode = getSettings().display.countdown;   // "both" | "begins" | "jamaat"
+  const nb = (mode==="both"||mode==="begins") ? nextBegins() : null;
+  const nj = (mode==="both"||mode==="jamaat") ? nextJamaat() : null;
+  if(!nb && !nj){ cd.hidden=true; return; }
+
   cd.hidden=false;
-  const totalMin=Math.max(0,Math.floor((nx.target-n)/60000));
-  const h=Math.floor(totalMin/60), m=totalMin%60;
-  $("cdLabel").textContent = nx.name+" begins in";
-  $("cdTime").textContent = h>0 ? (h+"h "+m+"m") : (m+"m");
+  cd.className = "countdown" + (mode==="both" ? " split" : "");
+  cd.innerHTML = cdBox("starts in", nb, n) + cdBox("Jamaat in", nj, n);
 }
 
 /* ---- Pull-to-refresh (only while the Prayers view is visible) ---- */

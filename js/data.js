@@ -93,10 +93,10 @@ export function toMinutes(t, prayer){
   return hr*60+min;
 }
 
-/* Next prayer to BEGIN from now, wrapping to tomorrow's Fajr. */
-export function nextBegins(from){
-  const order=[["Fajr","fajr","sehri"],["Zuhr","zuhr","zuhrS"],["Asr","asr","asrS"],
-               ["Maghrib","maghrib","maghrib"],["Isha","isha","ishaS"]];
+/* Shared "find the next prayer from now" walk, wrapping to tomorrow's Fajr.
+   `order` is [displayName, prayerKey, TABLE field] and `fajrField` is the
+   field to use for tomorrow's Fajr. */
+function nextFrom(order, fajrField, from){
   const now = from || new Date();
   const t = dayTimes(now);
   const nowMin = now.getHours()*60+now.getMinutes()+now.getSeconds()/60;
@@ -112,9 +112,23 @@ export function nextBegins(from){
   const tm=new Date(now); tm.setDate(tm.getDate()+1);
   const t2=dayTimes(tm);
   if(t2){
-    const mins=toMinutes(t2.sehri,"fajr");
-    const tgt=new Date(tm); tgt.setHours(Math.floor(mins/60),mins%60,0,0);
-    return {name:"Fajr",target:tgt};
+    const mins=toMinutes(t2[fajrField],"fajr");
+    if(mins!==null){
+      const tgt=new Date(tm); tgt.setHours(Math.floor(mins/60),mins%60,0,0);
+      return {name:"Fajr",target:tgt};
+    }
   }
   return null;
+}
+
+/* Next prayer to BEGIN from now. */
+export function nextBegins(from){
+  return nextFrom([["Fajr","fajr","sehri"],["Zuhr","zuhr","zuhrS"],["Asr","asr","asrS"],
+                   ["Maghrib","maghrib","maghrib"],["Isha","isha","ishaS"]], "sehri", from);
+}
+
+/* Next JAMAAT from now (Maghrib's single time serves as both). */
+export function nextJamaat(from){
+  return nextFrom([["Fajr","fajr","fajrJ"],["Zuhr","zuhr","zuhrJ"],["Asr","asr","asrJ"],
+                   ["Maghrib","maghrib","maghrib"],["Isha","isha","ishaJ"]], "fajrJ", from);
 }

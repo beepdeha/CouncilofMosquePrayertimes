@@ -5,6 +5,7 @@
 import { MON, RAW, overrideFor } from "./data.js";
 
 const $ = id => document.getElementById(id);
+const DAY_SHORT = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 let activeMonth = new Date().getMonth()+1;
 let mode = "begins";   // "begins" | "jamaat"
 
@@ -56,6 +57,7 @@ function showMonth(m){
     const cust = p => (mode==="jamaat" && r.custom && r.custom[p]) ? ' class="custom"' : "";
     return `<tr class="${cls}">
       <td class="d">${r.d}</td>
+      <td class="dy">${DAY_SHORT[date.getDay()]}</td>
       <td${cust("fajr")}>${cell(t.fajr)}</td>
       <td${cust("zuhr")}>${cell(t.zuhr)}</td>
       <td${cust("asr")}>${cell(t.asr)}</td>
@@ -70,12 +72,12 @@ function showMonth(m){
     <div class="card" style="margin-top:0;overflow-x:auto">
       <table class="mt-table">
         <thead><tr>
-          <th>Date</th><th>Fajr</th><th>Zuhr</th><th>Asr</th><th>Mgrb</th><th>Isha</th>
+          <th>Date</th><th>Day</th><th>Fajr</th><th>Zuhr</th><th>Asr</th><th>Mgrb</th><th>Isha</th>
         </tr></thead>
         <tbody>${body}</tbody>
       </table>
     </div>
-    <p class="note">Showing <b>${mode==="begins"?"start":"Jamaat"} times</b>. Today is highlighted · Friday dates underlined.</p>`;
+    <p class="note">Showing <b>${mode==="begins"?"start":"Jamaat"} times</b>. Today is highlighted · Fridays are shaded.</p>`;
 }
 
 export function initTimetable(){
