@@ -117,20 +117,32 @@ function wireResumeRefresh(){
   window.addEventListener("focus", onResume);
 }
 
-/* ---- First-run onboarding: settings must be seen before the app ---- */
+/* ---- First-run onboarding: one glance, not a tour ----
+   Only text size and dark mode are asked up front — the two choices that
+   are awkward to discover later because they change how everything else
+   looks. Notification granularity and display-mode options are real
+   settings, just not ones worth gatekeeping entry on; they wait in
+   Settings, discovered on purpose rather than forced now. */
 async function startOnboarding(){
   document.querySelector(".bottomnav").style.display="none";
-  show("settings");
+  Object.entries(SECTIONS).forEach(([k,v])=> $(v.el).hidden = (k!=="settings"));
+  current="settings";
+  inited.add("settings");
+  renderSettings({ onboarding:true });
+  window.scrollTo({ top:0 });
+  enter($("settingsView"));
+
   const view=$("settingsView");
   view.insertAdjacentHTML("afterbegin",
-    `<div class="onboard-banner">Asalaamu Alaikum 👋<br>Please adjust your settings before continuing to the app.</div>`);
+    `<div class="onboard-banner">Asalaamu Alaikum 👋<br>Set how the app looks — everything else is in Settings whenever you want it.</div>`);
   view.insertAdjacentHTML("beforeend",
-    `<button class="onboard-continue" id="onboardContinue">Continue</button>`);
+    `<button class="onboard-continue" id="onboardContinue">Continue to Prayers →</button>`);
   $("onboardContinue").onclick=async()=>{
     await setItem(ONBOARD_KEY, true);
     view.querySelector(".onboard-banner")?.remove();
     $("onboardContinue")?.remove();
     document.querySelector(".bottomnav").style.display="";
+    inited.delete("settings");   // next real visit to Settings renders the full screen
     show("prayers");
   };
 }

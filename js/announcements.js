@@ -50,7 +50,7 @@ function renderList(first=false){
   list.innerHTML=rows.map(i=>`
     <div class="item">
       <div class="meta">${esc(fmtDateTime(i))}</div>
-      <h3>${esc(i.title||"")}</h3>
+      <h2>${esc(i.title||"")}</h2>
       ${i.image?`<img src="${esc(i.image)}" alt="" loading="lazy">`:""}
       ${i.body?`<p>${esc(i.body).replace(/\n/g,"<br>")}</p>`:""}
     </div>`).join("");

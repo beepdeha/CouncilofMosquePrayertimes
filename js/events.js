@@ -55,7 +55,7 @@ async function loadAndRender(first=false){
   list.innerHTML = upcoming.map(x=>{
     const e=x.ev;
     return `<div class="event">
-      <h3>${esc(e.title||"Event")}</h3>
+      <h2>${esc(e.title||"Event")}</h2>
       <div class="when">${esc(fmtWhen(x.start, x.end, x.hasDur))}</div>
       ${e.location?`<div class="where">📍 ${esc(e.location)}</div>`:""}
       ${e.image?`<img src="${esc(e.image)}" alt="" loading="lazy">`:""}

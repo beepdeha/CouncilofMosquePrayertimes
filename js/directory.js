@@ -16,6 +16,13 @@ const BUSINESS_INTRO = "Our Business Directory exists to help our community bene
 
 function esc(s=""){ return String(s).replace(/[&<>"]/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c])); }
 
+/* Admin-entered placeholder slots ("Masjid 3 (to be added)", "Business 4
+   (available)") are real, intentional content — reserved directory space,
+   not an error. But rendered with full card weight they read as a broken
+   or abandoned feature. Give them an honest, visually distinct "reserved
+   slot" treatment instead of pretending they're a finished listing. */
+const isPlaceholder = name => /\((?:to be added|available)\)\s*$/i.test(String(name||"").trim());
+
 /* `cls` picks the entrance: a plain fade when switching sub-tabs, a
    return-from-the-left when coming back out of a detail page. */
 function showSection(cls="fade-enter"){
@@ -32,17 +39,24 @@ const backToList = ()=>showSection("back-enter");
 function renderMasjids(){
   const list=$("dirList");
   if(!mosques.length){ list.innerHTML=`<p class="empty">No masjids listed yet.</p>`; return; }
-  list.innerHTML = `<div class="dir-grid">` + mosques.map(m=>`
-    <div class="card-sq" data-id="${esc(m.id)}">
-      <h3>${esc(m.name||"Masjid")}</h3>
-      ${m.area?`<div class="meta">${esc(m.area)}</div>`:""}
-    </div>`).join("") + `</div>`;
+  list.innerHTML = `<div class="dir-grid">` + mosques.map(m=>{
+    const placeholder = isPlaceholder(m.name);
+    return `<div class="card-sq${placeholder?" placeholder":""}" data-id="${esc(m.id)}">
+      <h2>${esc(m.name||"Masjid")}</h2>
+      ${placeholder ? `<div class="meta">Reserved &middot; coming soon</div>`
+        : (m.area?`<div class="meta">${esc(m.area)}</div>`:"")}
+    </div>`;
+  }).join("") + `</div>`;
   list.querySelectorAll(".card-sq").forEach(el=> el.onclick=()=>showMasjid(el.dataset.id));
 }
 
-function field(lbl, val, href){
+/* `linkLabel` overrides the visible link text for values that are only
+   meaningful as a destination, not to read (a Maps URL) — phone/email/
+   website calls omit it and keep showing the real value, since those ARE
+   meant to be read. */
+function field(lbl, val, href, linkLabel){
   if(!val) return "";
-  const inner = href ? `<a href="${esc(href)}">${esc(val)}</a>` : esc(val);
+  const inner = href ? `<a href="${esc(href)}">${esc(linkLabel||val)}</a>` : esc(val);
   return `<div class="field"><div class="lbl">${lbl}</div><div class="val">${inner}</div></div>`;
 }
 
@@ -63,7 +77,7 @@ function showMasjid(id){
       ${field("Phone", m.phone, m.phone?`tel:${m.phone}`:null)}
       ${field("Email", m.email, m.email?`mailto:${m.email}`:null)}
       ${field("Website", m.website, m.website?normalizeUrl(m.website):null)}
-      ${field("Location", m.location, m.location?normalizeUrl(m.location):null)}
+      ${field("Location", m.location, m.location?normalizeUrl(m.location):null, "Get directions")}
       ${field("Notes", m.notes)}
       ${(!m.address&&!jummah&&!m.phone&&!m.location)?`<p class="empty">Details for this masjid will be added soon.</p>`:""}
     </div>`;
@@ -78,11 +92,14 @@ function renderBusinesses(){
   const list=$("dirList");
   const intro = `<div class="intro">${esc(BUSINESS_INTRO)}</div>`;
   if(!businesses.length){ list.innerHTML=intro+`<p class="empty">No businesses listed yet.</p>`; return; }
-  list.innerHTML = intro + `<div class="dir-grid">` + businesses.map(b=>`
-    <div class="card-sq" data-id="${esc(b.id)}">
-      <h3>${esc(b.name||"")}</h3>
-      ${b.category?`<div class="meta">${esc(b.category)}</div>`:""}
-    </div>`).join("") + `</div>`;
+  list.innerHTML = intro + `<div class="dir-grid">` + businesses.map(b=>{
+    const placeholder = isPlaceholder(b.name);
+    return `<div class="card-sq${placeholder?" placeholder":""}" data-id="${esc(b.id)}">
+      <h2>${esc(b.name||"")}</h2>
+      ${placeholder ? `<div class="meta">Advertise here</div>`
+        : (b.category?`<div class="meta">${esc(b.category)}</div>`:"")}
+    </div>`;
+  }).join("") + `</div>`;
   list.querySelectorAll(".card-sq").forEach(el=> el.onclick=()=>showBusiness(el.dataset.id));
 }
 
@@ -93,10 +110,10 @@ function showBusiness(id){
   const offers=(offersByBiz[id]||[]).sort((x,y)=>(y.createdAt||0)-(x.createdAt||0));
   const offersHtml = offers.length ? `
     <div class="detail">
-      <div class="section-cap">Offers &amp; News</div>
+      <h2 class="section-cap">Offers &amp; News</h2>
       ${offers.map(o=>`<div class="offer">
         ${o.createdAt?`<div class="meta">${new Date(o.createdAt).toLocaleDateString(undefined,{day:"numeric",month:"long",year:"numeric"})}</div>`:""}
-        <h4>${esc(o.title||"")}</h4>
+        <h3>${esc(o.title||"")}</h3>
         ${o.image?`<img src="${esc(o.image)}" alt="" loading="lazy">`:""}
         ${o.body?`<p>${esc(o.body).replace(/\n/g,"<br>")}</p>`:""}
       </div>`).join("")}

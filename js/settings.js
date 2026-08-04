@@ -60,19 +60,15 @@ export async function initSettings(changeCb){
 const $ = id => document.getElementById(id);
 const clampLead = n => Math.max(0, Math.min(60, Math.round(Number(n)||0)));
 
-export function renderSettings(){
-  const s=state;
-  const root=$("settingsView");
-  root.querySelector(".settings").innerHTML = `
+/* The Display card's text-size + dark-mode rows are the only settings
+   worth asking for before someone has even seen the app — everything else
+   (prayer/countdown display mode, both notification cards) is fine to
+   discover later in Settings, on purpose, when it's wanted. Shared between
+   the full Settings screen and the trimmed first-run render below. */
+function displayCard(s, { onboarding }){
+  return `
     <div class="set-card">
-      <div class="set-row linkrow" id="aboutLink" role="button" tabindex="0">
-        <div class="lbl" style="font-weight:700">About</div>
-        <span class="chev">›</span>
-      </div>
-    </div>
-
-    <div class="set-card">
-      <h3>Display</h3>
+      <h2>Display</h2>
       <div class="set-row">
         <div class="lbl">Text size</div>
         <div class="stepper">
@@ -85,6 +81,7 @@ export function renderSettings(){
         <div class="lbl">Dark mode</div>
         <label class="toggle"><input type="checkbox" id="darkToggle" ${s.theme==="dark"?"checked":""}><span class="track"></span><span class="knob"></span></label>
       </div>
+      ${onboarding ? "" : `
       <div class="set-row">
         <div class="lbl">Prayer times shown<small>Which times to show on the Prayers page</small></div>
         <select class="sel" id="dispTimes">
@@ -100,11 +97,44 @@ export function renderSettings(){
           <option value="begins" ${s.display.countdown==="begins"?"selected":""}>Start only</option>
           <option value="jamaat" ${s.display.countdown==="jamaat"?"selected":""}>Jamaat only</option>
         </select>
+      </div>`}
+    </div>`;
+}
+
+/* Wires only the two controls onboarding actually renders. The full-screen
+   wiring below adds the rest on top of this when !onboarding. */
+function wireDisplayCard(s){
+  $("fontInc").onclick=()=>setFont(s.fontScale+0.1);
+  $("fontDec").onclick=()=>setFont(s.fontScale-0.1);
+  $("darkToggle").onchange=e=>{ s.theme=e.target.checked?"dark":"light"; apply(); persist(); onChange("theme"); };
+}
+
+/* `{ onboarding: true }` renders just the Display card (text size + dark
+   mode) with no About link and no notification cards — first-run should
+   take one glance, not a full tour of every preference in the app. */
+export function renderSettings(opts={}){
+  const { onboarding=false } = opts;
+  const s=state;
+  const root=$("settingsView");
+
+  if(onboarding){
+    root.querySelector(".settings").innerHTML = displayCard(s, { onboarding:true });
+    wireDisplayCard(s);
+    return;
+  }
+
+  root.querySelector(".settings").innerHTML = `
+    <div class="set-card">
+      <div class="set-row linkrow" id="aboutLink" role="button" tabindex="0">
+        <div class="lbl" style="font-weight:700">About</div>
+        <span class="chev">›</span>
       </div>
     </div>
 
+    ${displayCard(s, { onboarding:false })}
+
     <div class="set-card">
-      <h3>Prayer notifications</h3>
+      <h2>Prayer notifications</h2>
       <div class="set-row">
         <div class="lbl">Enable notifications</div>
         <label class="toggle"><input type="checkbox" id="notifToggle" ${s.notify.enabled?"checked":""}><span class="track"></span><span class="knob"></span></label>
@@ -129,7 +159,7 @@ export function renderSettings(){
     </div>
 
     <div class="set-card">
-      <h3>Announcement notifications</h3>
+      <h2>Announcement notifications</h2>
       <div class="set-row">
         <div class="lbl">Enable notifications<small>Get notified when new posts are added</small></div>
         <label class="toggle"><input type="checkbox" id="annNotifToggle" ${s.announce.enabled?"checked":""}><span class="track"></span><span class="knob"></span></label>
@@ -143,9 +173,7 @@ export function renderSettings(){
 
   // wire controls
   $("aboutLink").onclick=()=>document.dispatchEvent(new CustomEvent("app:navigate",{ detail:"about" }));
-  $("fontInc").onclick=()=>setFont(s.fontScale+0.1);
-  $("fontDec").onclick=()=>setFont(s.fontScale-0.1);
-  $("darkToggle").onchange=e=>{ s.theme=e.target.checked?"dark":"light"; apply(); persist(); onChange("theme"); };
+  wireDisplayCard(s);
   $("dispTimes").onchange=e=>{ s.display.times=e.target.value; persist(); onChange("display"); };
   $("dispCountdown").onchange=e=>{ s.display.countdown=e.target.value; persist(); onChange("display"); };
   $("notifToggle").onchange=e=>{ s.notify.enabled=e.target.checked; persist(); onChange("notify"); };
