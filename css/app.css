@@ -48,7 +48,8 @@ header{ text-align:center; padding:max(20px,env(safe-area-inset-top)) 0 4px; }
   font-size:calc(1.7rem*var(--fs));font-weight:800;cursor:pointer;
   display:flex;align-items:center;justify-content:center;transition:filter .15s ease;
 }
-.navbtn:hover{filter:brightness(1.06);}
+/* :hover moved to the Motion section at the end of this file, gated behind
+   (hover: hover) so a tap does not leave it stuck on touch devices */
 .navbtn:active{transform:scale(.96);}
 .todaybtn{
   display:block;margin:12px auto 0;background:var(--card);border:2px solid var(--brand);
@@ -148,7 +149,7 @@ header{ text-align:center; padding:max(20px,env(safe-area-inset-top)) 0 4px; }
 .list{margin-top:18px;display:flex;flex-direction:column;gap:12px;}
 .item{ background:var(--card);border-radius:14px;box-shadow:0 8px 22px rgba(10,18,71,.10);padding:16px; }
 .item.tappable{cursor:pointer;}
-.item.tappable:active{transform:scale(.995);}
+.item.tappable:active{transform:scale(.98);}
 .item h3{ margin:0 0 4px;font-size:calc(1.12rem*var(--fs));color:var(--ink);font-weight:800; }
 .item .meta{ color:var(--muted);font-weight:700;font-size:calc(.78rem*var(--fs));text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px; }
 .item p{ margin:6px 0 0;color:var(--ink);line-height:1.5;font-size:calc(.98rem*var(--fs)); }
@@ -210,8 +211,8 @@ select.sel{ padding:9px 10px;border:2px solid var(--line);border-radius:10px;bac
 /* iOS-style toggle */
 .toggle{position:relative;width:52px;height:30px;flex:0 0 auto;}
 .toggle input{opacity:0;width:100%;height:100%;margin:0;cursor:pointer;}
-.toggle .track{ position:absolute;inset:0;background:var(--line);border-radius:30px;transition:background .15s;pointer-events:none; }
-.toggle .knob{ position:absolute;top:3px;left:3px;width:24px;height:24px;background:#fff;border-radius:50%;transition:transform .15s;box-shadow:0 2px 4px rgba(0,0,0,.25);pointer-events:none; }
+.toggle .track{ position:absolute;inset:0;background:var(--line);border-radius:30px;transition:background 150ms ease;pointer-events:none; }
+.toggle .knob{ position:absolute;top:3px;left:3px;width:24px;height:24px;background:#fff;border-radius:50%;transition:transform 150ms var(--ease-out);box-shadow:0 2px 4px rgba(0,0,0,.25);pointer-events:none; }
 .toggle input:checked + .track{background:var(--brand);}
 .toggle input:checked + .track + .knob{transform:translateX(22px);}
 
@@ -243,7 +244,9 @@ select.sel{ padding:9px 10px;border:2px solid var(--line);border-radius:10px;bac
   white-space:normal;overflow-wrap:normal;hyphens:manual;text-align:center;
 }
 .navitem .ico{width:22px;height:22px;display:block;}
-.navitem .ico svg{width:100%;height:100%;fill:#ffffff;display:block;}
+/* currentColor so the icon dims/tints with the label — previously the icon
+   stayed solid white and only the text marked the active tab */
+.navitem .ico svg{width:100%;height:100%;fill:currentColor;display:block;}
 .navitem.active{color:var(--nav-active);}
 .navitem:active{transform:scale(.96);}
 
@@ -312,3 +315,87 @@ body{ font-weight:400; }
 /* timetable dates bold; sub-tab headings bold */
 .mt-table td.d{ font-weight:700; }
 .subtab{ font-weight:700; }
+
+/* ============================================================
+   MOTION
+   Last in the file so these transitions win over the earlier
+   component rules. Only transform/opacity/colour animate — all
+   composited, none trigger layout. Durations are deliberately
+   short: this is a reference app people check quickly, and the
+   bottom nav is tapped more than anything else in it.
+   Paired with www/js/motion.js.
+   ============================================================ */
+
+/* ---- Press feedback ----
+   The :active scales above already existed but had no transition, so the
+   press snapped and the release snapped back. These three had no :active
+   state at all despite being buttons. */
+.todaybtn:active,.seg button:active,.subtab:active{ transform:scale(.97); }
+
+.navbtn,.todaybtn,.monthbtn,.seg button,.subtab,.item.tappable,.backlink,
+.dir-grid .card-sq,.stepper button,.navitem,.onboard-continue,.set-row.linkrow{
+  transition:transform 160ms var(--ease-out),
+             opacity 160ms var(--ease-out),
+             color 150ms ease,
+             filter 150ms ease;
+}
+
+/* ---- Entrances ----
+   One-shot animations with no fill, so the resting state is always the
+   normal, fully-visible one. See the note at the top of js/motion.js for
+   why these are animations rather than transitions. */
+
+/* Bottom-nav tab switch. Incoming section only; the outgoing one hides
+   instantly, so there is no overlap and no delay before the new view is
+   usable. 160ms is deliberately near the floor of perceptible. */
+.wrap > section.view-enter{ animation:view-in 160ms var(--ease-out); }
+@keyframes view-in{ from{ opacity:0;transform:translateY(6px); } }
+
+/* Content swapped inside a view (sub-tabs, refreshes) fades only: the tabs
+   sit directly above the list, so vertical movement there reads as jitter. */
+.fade-enter{ animation:fade-in 120ms var(--ease-out); }
+@keyframes fade-in{ from{ opacity:0; } }
+
+/* Directory drill-down. Detail arrives from the right, the list returns
+   from the left, so the hierarchy is legible. Small offsets — a cue, not
+   a page transition. */
+#mosqueDetail.detail-enter{ animation:detail-in 200ms var(--ease-out); }
+@keyframes detail-in{ from{ opacity:0;transform:translateX(12px); } }
+#dirList.back-enter{ animation:back-in 200ms var(--ease-out); }
+@keyframes back-in{ from{ opacity:0;transform:translateX(-8px); } }
+
+/* ---- List stagger (first render of Events / Announcements) ----
+   Purely decorative, and never blocks interaction. Capped at six items:
+   past that the delay outweighs the effect. */
+/* `backwards` holds the from-state through the delay, so the hidden period
+   comes from the animation itself — nothing keeps an item at opacity:0 if
+   the animation never runs. */
+.list.stagger > *{ animation:item-in 240ms var(--ease-out) backwards; }
+.list.stagger > *:nth-child(1){animation-delay:0ms;}
+.list.stagger > *:nth-child(2){animation-delay:40ms;}
+.list.stagger > *:nth-child(3){animation-delay:80ms;}
+.list.stagger > *:nth-child(4){animation-delay:120ms;}
+.list.stagger > *:nth-child(5){animation-delay:160ms;}
+.list.stagger > *:nth-child(n+6){animation-delay:200ms;}
+@keyframes item-in{ from{ opacity:0;transform:translateY(8px); } }
+
+/* ---- Reduced motion ----
+   Gentler, not zero: the fades stay (they still bridge the content swap),
+   the movement goes. The stagger is skipped in JS. */
+@media (prefers-reduced-motion: reduce){
+  /* swap in the movement-free keyframe; the fade still bridges the swap */
+  .wrap > section.view-enter,
+  #mosqueDetail.detail-enter,
+  #dirList.back-enter{ animation-name:fade-in; }
+  .navbtn:active,.todaybtn:active,.monthbtn:active,.item.tappable:active,
+  .backlink:active,.dir-grid .card-sq:active,.stepper button:active,
+  .navitem:active,.onboard-continue:active,.seg button:active,
+  .subtab:active{ transform:none; }
+  .list.stagger > *{ animation:none; }
+}
+
+/* ---- Hover ----
+   Gated so a tap on a touch device does not leave a stuck hover state. */
+@media (hover: hover) and (pointer: fine){
+  .navbtn:hover{ filter:brightness(1.06); }
+}

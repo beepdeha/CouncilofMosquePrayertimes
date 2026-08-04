@@ -4,6 +4,7 @@
    ============================================================ */
 import { loadCollection } from "./firebase.js";
 import { normalizeUrl } from "./links.js";
+import { enter } from "./motion.js";
 
 const $ = id => document.getElementById(id);
 let activeTab = "mosques";
@@ -15,13 +16,17 @@ const BUSINESS_INTRO = "Our Business Directory exists to help our community bene
 
 function esc(s=""){ return String(s).replace(/[&<>"]/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c])); }
 
-function showSection(){
+/* `cls` picks the entrance: a plain fade when switching sub-tabs, a
+   return-from-the-left when coming back out of a detail page. */
+function showSection(cls="fade-enter"){
   document.querySelectorAll("#directoryView .subtab").forEach(b=>
     b.classList.toggle("active", b.dataset.dir===activeTab));
   $("mosqueDetail").hidden=true;
   $("dirList").hidden=false;
   activeTab==="mosques" ? renderMasjids() : renderBusinesses();
+  enter($("dirList"), cls);
 }
+const backToList = ()=>showSection("back-enter");
 
 /* ---------- Masjids (square cards, 2-up) ---------- */
 function renderMasjids(){
@@ -62,8 +67,10 @@ function showMasjid(id){
       ${field("Notes", m.notes)}
       ${(!m.address&&!jummah&&!m.phone&&!m.location)?`<p class="empty">Details for this masjid will be added soon.</p>`:""}
     </div>`;
-  $("backBtn").onclick=showSection;
-  window.scrollTo({top:0,behavior:"smooth"});
+  $("backBtn").onclick=backToList;
+  // instant, not smooth — a scroll animation would fight the slide-in
+  window.scrollTo({top:0});
+  enter(box, "detail-enter");
 }
 
 /* ---------- Businesses (list → detail with offers) ---------- */
@@ -105,14 +112,16 @@ function showBusiness(id){
       ${field("Website", b.website, b.website?normalizeUrl(b.website):null)}
     </div>
     ${offersHtml}`;
-  $("backBtn").onclick=showSection;
-  window.scrollTo({top:0,behavior:"smooth"});
+  $("backBtn").onclick=backToList;
+  // instant, not smooth — a scroll animation would fight the slide-in
+  window.scrollTo({top:0});
+  enter(box, "detail-enter");
 }
 
 export async function initDirectory(){
   $("dirList").innerHTML=`<p class="empty">Loading…</p>`;
   document.querySelectorAll("#directoryView .subtab").forEach(b=>{
-    b.onclick=()=>{ activeTab=b.dataset.dir; showSection(); };
+    b.onclick=()=>{ activeTab=b.dataset.dir; showSection(); };   // fade
   });
   const [m,b,o]=await Promise.all([
     loadCollection("mosques",{ orderField:"name", desc:false }),

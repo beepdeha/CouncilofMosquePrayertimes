@@ -7,6 +7,7 @@
    ============================================================ */
 import { loadCollection } from "./firebase.js";
 import { attachPTR } from "./ptr.js";
+import { enter, stagger } from "./motion.js";
 
 const $ = id => document.getElementById(id);
 const TYPES = { announcement:"announcements", death:"Janaza notices",
@@ -29,7 +30,9 @@ function fmtDateTime(i){
          " · " + d.toLocaleTimeString(undefined,{ hour:"numeric", minute:"2-digit" });
 }
 
-function renderList(){
+/* `first` is true only on the section's initial render — that is where the
+   stagger is worth spending; a sub-tab switch or a refresh just fades. */
+function renderList(first=false){
   document.querySelectorAll("#announcementsView .subtab").forEach(b=>
     b.classList.toggle("active", b.dataset.type===activeType));
 
@@ -38,9 +41,12 @@ function renderList(){
     .filter(i=>(i.type||"announcement")===activeType)
     .sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));   // newest first
   if(!rows.length){
+    list.classList.remove("stagger");
     list.innerHTML=`<p class="empty">No ${TYPES[activeType]} at the moment.<br>Check back soon.</p>`;
+    enter(list, "fade-enter");
     return;
   }
+  list.classList.remove("stagger");
   list.innerHTML=rows.map(i=>`
     <div class="item">
       <div class="meta">${esc(fmtDateTime(i))}</div>
@@ -48,6 +54,7 @@ function renderList(){
       ${i.image?`<img src="${esc(i.image)}" alt="" loading="lazy">`:""}
       ${i.body?`<p>${esc(i.body).replace(/\n/g,"<br>")}</p>`:""}
     </div>`).join("");
+  first ? stagger(list) : enter(list, "fade-enter");
 }
 
 async function load(){
@@ -61,7 +68,7 @@ export async function initAnnouncements(){
     b.onclick=()=>{ activeType=b.dataset.type; renderList(); };
   });
   await load();
-  renderList();
+  renderList(true);
   if(!ptrAttached){
     ptrAttached = true;
     attachPTR({ sectionId:"announcementsView", ptrId:"ptrAnn", textId:"ptrAnnText",

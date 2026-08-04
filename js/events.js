@@ -6,6 +6,7 @@
    ============================================================ */
 import { loadCollection } from "./firebase.js";
 import { attachPTR } from "./ptr.js";
+import { enter, stagger } from "./motion.js";
 
 const $ = id => document.getElementById(id);
 let ptrAttached = false;
@@ -33,7 +34,9 @@ function fmtWhen(start, end, hasDuration){
   return `${day} · ${time}`;
 }
 
-async function loadAndRender(){
+/* `first` is true only on the section's initial render — that is where the
+   stagger is worth spending; a pull-to-refresh just fades. */
+async function loadAndRender(first=false){
   const { data } = await loadCollection("events", { orderField:"date", desc:false });
   const items = data||[];
   const now = new Date();
@@ -43,8 +46,10 @@ async function loadAndRender(){
     .sort((a,b)=> a.start - b.start);
 
   const list = $("eventsList");
+  list.classList.remove("stagger");
   if(!upcoming.length){
     list.innerHTML = `<p class="empty">No upcoming events at the moment.<br>Check back soon.</p>`;
+    enter(list, "fade-enter");
     return;
   }
   list.innerHTML = upcoming.map(x=>{
@@ -57,11 +62,12 @@ async function loadAndRender(){
       ${e.description?`<p>${esc(e.description).replace(/\n/g,"<br>")}</p>`:""}
     </div>`;
   }).join("");
+  first ? stagger(list) : enter(list, "fade-enter");
 }
 
 export async function initEvents(){
   $("eventsList").innerHTML = `<p class="empty">Loading…</p>`;
-  await loadAndRender();
+  await loadAndRender(true);
   if(!ptrAttached){
     ptrAttached = true;
     attachPTR({ sectionId:"eventsView", ptrId:"ptrEvents", textId:"ptrEventsText", onRefresh: loadAndRender });

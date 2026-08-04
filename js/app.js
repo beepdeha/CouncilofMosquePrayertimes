@@ -16,6 +16,7 @@ import { initTimetable } from "./timetable.js";
 import { initEvents } from "./events.js";
 import { initAnnouncements } from "./announcements.js";
 import { initDirectory } from "./directory.js";
+import { enter } from "./motion.js";
 
 const $ = id => document.getElementById(id);
 const ONBOARD_KEY = "onboarded.v1";
@@ -68,7 +69,8 @@ function show(name){
   document.querySelectorAll(".navitem").forEach(b=>
     b.classList.toggle("active", b.dataset.nav===navKey));
   lazyInit(name);
-  window.scrollTo({ top:0 });
+  window.scrollTo({ top:0 });   // stays instant — never smooth-scroll a view change
+  enter($(SECTIONS[name].el));
 }
 
 /* ---- About: back link + easter egg (5 taps on Credits) ---- */
